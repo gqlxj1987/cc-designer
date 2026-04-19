@@ -13,7 +13,13 @@
 - 純視覺探索（多個色彩 / 版面 / icon 組並列比較）→ 用 `design_canvas.jsx`
 - 見 `wireframes.md`
 
-## 骨架
+## 先決定：React 還是 static HTML？
+
+- **Default 是 static HTML + CSS**——大多數 landing / marketing mock / 淺互動 prototype 不需要 React
+- 何時加 React：多步驟 state、form validation、Tweaks panel 邏輯、跨 screen 轉場、動態列表
+- 即使決定用 React，仍預設 CDN pinned + Babel inline；不要開 npm / build pipeline
+
+## 骨架（需要 React 時）
 
 ```html
 <!DOCTYPE html>
@@ -34,6 +40,8 @@
 
 <!-- 共用 primitives -->
 <script type="text/babel" src="components.jsx"></script>
+<!-- Starter（裝置框） -->
+<script type="text/babel" src="ios_frame.jsx"></script>
 <!-- 各 screen -->
 <script type="text/babel" src="screens.jsx"></script>
 <!-- Main App -->
@@ -59,7 +67,7 @@ Object.assign(window, { Button, Chip });
 // screens.jsx — Button 與 Chip 已在 window 上
 function WelcomeScreen({ onNext }) {
   return (
-    <div>
+    <div data-screen-label="01 Welcome">
       <h1>Welcome</h1>
       <Button onClick={onNext}>Get started</Button>
     </div>
@@ -78,29 +86,37 @@ function App() {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 ```
 
+Starter 檔（例如 `ios_frame.jsx`）本身已在檔尾做 `Object.assign(window, {...})`，直接用即可——檢查檔尾就知道它暴露了哪些名字。
+
 ## 絕對不要
 
 - 寫 `const styles = {...}`——多檔同名會撞。改 `const welcomeStyles = {...}` 或 inline style。
 - 加 `type="module"` 到 `<script>`——會 break。
-- 用 `scrollIntoView`——會打壞 prototype。用 `scrollTop`、`scrollTo()` 或 ref + `getBoundingClientRect` 自算。
 - 單檔 > 1000 行——拆！
+- **在 Claude.ai Artifacts iframe 預覽的 prototype** 中用 `scrollIntoView`——host 會被打壞。本地 HTML 直接雙擊打開用 `scrollIntoView` 沒問題。若不確定使用者會在哪裡預覽，預設用 `element.scrollTo()` / `window.scrollTo()` / ref + `getBoundingClientRect` 自算。
 
 ## 裝置 / 視窗 frame
 
 為了看起來像真產品，包一層 frame：
-- iOS → `ios_frame.jsx`
-- Android → `android_frame.jsx`
-- 桌機 app → `macos_window.jsx`
-- 瀏覽器內 → `browser_window.jsx`
+- iOS → `ios_frame.jsx`（iOS 26 Liquid Glass）
+- Android → `android_frame.jsx`（Material 3）
+- 桌機 app → `macos_window.jsx`（macOS Tahoe Liquid Glass）
+- 瀏覽器內 → `browser_window.jsx`（Chrome dark）
 
 ```jsx
-// 從 assets/starters 複製進來的
-<IOSFrame>
-  <WelcomeScreen onNext={...} />
-</IOSFrame>
+// 從 assets/starters 複製進來，由 Babel 載入
+<IOSDevice dark={false} navTitle="Home" showTabBar>
+  <WelcomeScreen onNext={handleNext} />
+</IOSDevice>
 ```
 
-不要自己畫裝置邊框——starter 做得精細得多（status bar、動態島、虛擬鍵盤）。
+實際可用的 export 請檢查 starter 檔尾的 `Object.assign(window, {...})`。對照 `starter-components.md`：
+- ios_frame.jsx：`IOSDevice`、`IOSStatusBar`、`IOSNavBar`、`IOSGlassPill`、`IOSList`、`IOSListRow`、`IOSKeyboard`
+- android_frame.jsx：`AndroidDevice`、`AndroidStatusBar`、`AndroidAppBar`、`AndroidListItem`、`AndroidNavBar`、`AndroidKeyboard`
+- macos_window.jsx：`MacWindow`、`MacSidebar`、`MacSidebarItem`、`MacSidebarHeader`、`MacToolbar`、`MacTrafficLights`、`MacGlass`
+- browser_window.jsx：`ChromeWindow`、`ChromeTabBar`、`ChromeTab`、`ChromeToolbar`、`ChromeTrafficLights`
+
+不要自己畫裝置邊框——starter 做得精細得多（status bar、動態島、Liquid Glass 折射、虛擬鍵盤）。
 
 ## 解讀 `<mentioned-element>` blocks
 
@@ -126,9 +142,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 Tweaks 讓使用者即時切換變體。典型 prototype 的 tweaks：
 - 主色 / accent
 - 主 CTA copy
-- 動畫 curve（ease-out / spring / linear）
+- 動畫 curve（ease-out / linear）
 - 要不要加 skip / back 按鈕
 - onboarding 步驟數
+- `dark` prop 切換（裝置 frame 支援）
 
 細節見 `tweaks.md`。
 

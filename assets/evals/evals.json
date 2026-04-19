@@ -20,12 +20,13 @@
       "id": 2,
       "name": "interactive-prototype-onboarding",
       "prompt": "我要做一個 4-screen 的 iOS onboarding prototype（welcome → permission → profile → first action），可以點按鈕在 screen 之間切換。沒有既有 UI kit，請先問我品牌參考。",
-      "expected_output": "先用 AskUserQuestion 問品牌 / UI kit / 風格偏好，再 scaffold；最終輸出 index.html + ios_frame.jsx + 4 個 screen JSX；React 18.3.1 + Babel 7.29.0 pinned；data-screen-label 1-4；可點切換",
+      "expected_output": "先用 AskUserQuestion 問品牌 / UI kit / 風格偏好，再 scaffold；最終輸出 index.html + ios_frame.jsx + 4 個 screen JSX；React 18.3.1 + Babel 7.29.0 pinned；data-screen-label 1-4；用 <IOSDevice> 包 screen；可點切換",
       "files": [],
       "expectations": [
         "先發 AskUserQuestion，不要自行假設品牌",
         "React + ReactDOM + Babel 用 unpkg pinned 版本與 integrity",
         "ios_frame.jsx 從 starter 複製",
+        "用 <IOSDevice> 做外框（不是舊名 IOSFrame）",
         "每個 screen 有 data-screen-label",
         "跨檔 component 用 Object.assign(window, {...}) 共享",
         "不要用 type=\"module\"",
@@ -36,14 +37,14 @@
       "id": 3,
       "name": "wireframe-design-canvas-3-options",
       "prompt": "幫我探索 settings page 的 3 種 wireframe 方向：1) sidebar nav, 2) tab nav, 3) accordion。低保真就好，灰階 + 真 copy + 標註。",
-      "expected_output": "design_canvas.jsx + 3 個 Cell；每個 Cell 有 label 表達 intent（不是 A/B/C）；greyscale 色票；用真實 settings copy 而非 lorem ipsum",
+      "expected_output": "design_canvas.jsx + 3 個 DCArtboard；每個有 label 表達 intent（不是 A/B/C）；greyscale 色票；用真實 settings copy 而非 lorem ipsum",
       "files": [],
       "expectations": [
-        "用 design_canvas.jsx starter",
-        "3 個 Cell，label 寫出 intent（如 'Dense sidebar' / 'Tabbed top nav' / 'Accordion grouping'）",
+        "用 design_canvas.jsx starter（DesignCanvas / DCSection / DCArtboard）",
+        "3 個 DCArtboard，label 寫出 intent（如 'Dense sidebar' / 'Tabbed top nav' / 'Accordion grouping'）",
         "灰階色（#fafaf7 / #e3e3e0 / #888 / #0b0b0f）",
         "無 lorem ipsum",
-        "annotation 文字標明設計取捨"
+        "annotation 用 DCPostIt 或 aside 標明設計取捨"
       ]
     },
     {

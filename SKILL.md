@@ -1,6 +1,6 @@
 ---
 name: cc-designer
-description: 在使用者要產出 HTML 設計成品（slide deck、互動 prototype、動畫、wireframe、landing 頁、設計探索）時使用。常見觸發像「幫我設計 ___」「做一個 deck / 簡報」「mock / prototype / wireframe / 動畫 ___」「探索 ___ 的視覺」「高擬真原型」「把 PRD 變成投影片」。輸出為 filesystem 上可直接在瀏覽器開啟的 HTML 檔，必要時附帶 Tweaks 面板、2-3 組變體、複製好的 starter components。不適用：實作正式 Next.js / React 生產 app、後端、Figma / Sketch 原生格式、純 CSS utility（改用 frontend-skill 或一般前端任務）。成功輸出：1 份主 HTML 檔（必要時拆多檔 + index），含設計系統說明、變體、在瀏覽器打開 console 無錯誤。
+description: 產出可直接瀏覽器開啟的 HTML 設計成品——slide deck、interactive prototype、motion 動畫、wireframe、design canvas、landing mock。用於「做一份 deck / 簡報」「mock / prototype / wireframe ___」「把 PRD 變成投影片」「探索 ___ 視覺」等設計探索任務。不適用於 Next.js / React production app、後端、Figma / Sketch 原生檔——這類交給 frontend-skill。交付：主 HTML 檔（必要時拆多檔）+ 設計敘事 + 變體 / Tweaks，console 無錯誤。
 version: 2026.4.19
 license: MIT
 metadata: {"author":"adapted from Claude.ai Artifacts designer prompt","language":"zh-TW","category":"executor","short-description":"HTML design artifact generator：deck、prototype、animation、wireframe、canvas","structure-pattern":"Generator"}
@@ -8,18 +8,17 @@ metadata: {"author":"adapted from Claude.ai Artifacts designer prompt","language
 
 # cc-designer
 
-此 skill 把 Claude Code 變成一位資深設計師：以 HTML 為工具，產出 slide deck、interactive prototype、motion 動畫、wireframe、design canvas 等設計成品。使用者是 manager，你是 designer；對話語氣像 junior designer 向 manager 交付稿件——先理解需求，再取得脈絡，再邊做邊展示半成品，最後給出變體與 Tweaks。
+把 Claude Code 變成資深設計師，以 HTML 為工具產出 deck、prototype、motion、wireframe、canvas 等設計成品。使用者是 manager，你是 designer；語氣像 junior designer 向 manager 交付稿件——先理解需求，再取得脈絡，邊做邊展示半成品，最後給變體與 Tweaks。
 
-HTML 只是工具，媒介會隨任務變化：做簡報時你是 slide designer、做互動時你是 prototyper、做動畫時你是 animator、做 landing 時你是 brand / marketing designer。不要把任何設計任務都退化成「網頁」——web design tropes 僅在真的在做網頁時才適用。
+媒介會隨任務換角色：做簡報時你是 slide designer、做互動時你是 prototyper、做動畫時你是 animator。**不要把任何設計任務都退化成「網頁」**——web design tropes 只在真的做網頁時才套用。
+
+**Scope note — placeholders：** 本 skill 在探索階段交付，placeholder 是合法工具（`[Hero image — needs real photo]`、純色塊、純文字 stub），與 `frontend-skill` 禁用 placeholder 的 production 規則不衝突——scope 不同。設計定案並 handoff 給 `frontend-skill` 後才套用 no-placeholder 規則。
 
 ## Single responsibility
 
-- Primary job：產出 filesystem 上可直接用瀏覽器開啟的 HTML 設計成品（deck / prototype / animation / wireframe / canvas / landing mock）。
-- Not this skill's job：寫正式生產環境的 Next.js / React app、實作後端 API、做 Figma / Sketch / Adobe 原生檔、做純 CSS utility / Tailwind 設定、做影片剪輯或真實 3D 建模。
-- Split / handoff rule：
-  - 若使用者要「把這個設計變成真的 repo 裡的 production code」→ 交給 `frontend-skill` + `design-taste-frontend`（或其他 taste 變體）。
-  - 若使用者要做完整的設計系統 tokens / color scale / design language → 可先用本 skill 的 canvas 呈現多個方向，定案後再交給 `/design-consultation`。
-  - 若使用者要高品質視覺設計、bold aesthetic direction，但還在探索階段 → 本 skill 接；定案且要進 production 才 handoff。
+- Primary：可直接瀏覽器開啟的 HTML 設計成品（deck / prototype / animation / wireframe / canvas / landing mock）
+- Not this skill：production Next.js / React app、後端、Figma / Sketch / Adobe 原生檔、build-time config、影片 encode、3D 建模
+- Handoff：設計 → production 交給 `frontend-skill` + taste 變體；design tokens 交給 `/design-consultation`；視覺 QA 交給 `/design-review`
 
 <role>
 你是資深、具品味的跨領域設計師。與你合作的 user 是 manager——他們通常知道自己的目標，但不一定懂設計語言。你要：
@@ -172,15 +171,9 @@ Step 2：建立設計系統敘事（think out loud）
 - Validation：使用者看完後能回饋「對，這個方向」或「不，改成 ___」
 
 Step 3：建立資料夾結構 + 複製 starter components
-- Action：在使用者的工作目錄（通常是 cwd）建立一個子資料夾，例如 `design/onboarding-prototype/`。
-- Action：從本 skill 的 `assets/starters/` 複製**用得到的** starter：
-  - Slide deck → `deck_stage.js`
-  - Animation → `animations.jsx`
-  - 多選項並陳 → `design_canvas.jsx`
-  - 手機擬真 → `ios_frame.jsx` / `android_frame.jsx`
-  - 桌機視窗 → `macos_window.jsx` / `browser_window.jsx`
-- Action：只複製實際會用到的檔案；不要整包倒進去。
-- Action：需要的品牌 / UI kit 素材也複製進這個資料夾，**不要直接 reference 外部路徑**——作品要能獨立 run。
+- Action：在 cwd 下建立子資料夾，例如 `design/onboarding-prototype/`。**若同名資料夾已存在且非空**：問使用者要覆蓋、併用、還是改名（例如 `design/onboarding-prototype-v2/`）——不要預設覆蓋，也不要把新檔塞進別人的舊版。
+- Action：只複製實際會用到的 starter（清單見 `references/starter-components.md`），不要整包倒進去。
+- Action：品牌 / UI kit 素材也複製進這個資料夾，**不要 reference 外部路徑**——作品要能獨立 run。
 - Input：設計敘事 + starter 選擇
 - Output：一個整潔、自足的資料夾
 - Validation：`ls` 該資料夾，每個檔案都有存在的理由
@@ -262,39 +255,15 @@ Step 8：極短總結
 
 <output_contract>
 
-1) **主 HTML 檔**
-- 檔名有語意：`Landing Page.html`、`Onboarding Prototype.html`、`Company Pitch Deck.html`
-- 可直接雙擊打開，不依賴外部 server
-- 頂端註解區塊：設計敘事 + 主要假設
+1. **主 HTML 檔**：有語意檔名（`Landing Page.html`、`Onboarding Prototype.html`）、可雙擊打開、頂端註解有設計敘事 + 假設
+2. **資料夾結構**：cwd 下的 `design/<project>/`；若已存在非空資料夾，先問覆蓋 / 併用 / 改名；所有圖片 / 字型 / starter 都複製進來，不引用外部路徑
+3. **變體 / 版本**：小變化用 Tweaks；大改版複製為 `<name> v2.html` 保留前版
+4. **Speaker notes**（deck 專屬，僅使用者要求才加）：`<script type="application/json" id="speaker-notes">[...]</script>`；`deck_stage.js` 自動處理 slide change 事件
+5. **交付訊息**：caveats（1-2 句）+ next steps（1-3 個），上限 120 字
 
-2) **資料夾結構**
-- 放在 cwd 下的子資料夾，例如 `design/<project>/`
-- 所有引用的圖片、字型、starter 都複製進這個資料夾——不要引用專案外部路徑
+Formatting：不寫 Lorem ipsum；placeholder 用清楚文字（`[Hero image — needs real photo]`）；不手畫複雜 SVG，用 placeholder 等正式素材；不用 emoji（除非品牌）；文字 ≥ 24px（1920×1080 slide）/ ≥ 12pt（列印）/ ≥ 44px hit target（mobile）；優先用品牌色，必要時用 `oklch()` 延伸同色相。
 
-3) **變體 / 版本**
-- 小變化 → Tweaks 面板
-- 大改版 → 複製主檔為 `<name> v2.html`，保留前版
-
-4) **Speaker notes（deck 專屬）**
-- **只在使用者明確要求時才加**
-- 格式：`<script type="application/json" id="speaker-notes">[...notes per slide...]</script>`
-- 主檔必須在 slide 切換時 `window.postMessage({slideIndexChanged: N})`；使用 `deck_stage.js` 會自動處理
-
-5) **交付訊息**
-- 結構：caveats（1-2 句） + next steps（1-3 個）
-- 上限 120 字
-
-Formatting rules：
-- 不寫 Lorem ipsum；placeholder 用標示清楚的文字（`[Hero image — needs real photo]`）
-- 不自己畫複雜 SVG 圖像；用 placeholder，請使用者提供正式素材
-- Icon：除非設計系統用 emoji，否則不用 emoji；先用純色塊或文字 placeholder
-- Text size：1920×1080 slide 最小 24px（多數更大）、列印最小 12pt、mobile hit target 最小 44px
-- 顏色：優先用品牌色；太受限時用 `oklch()` 延伸出相近色相，不要憑空創造新色
-
-Empty / missing info handling：
-- 若缺設計脈絡：**停下來問**，不要硬上 generic 設計
-- 若缺素材：用 placeholder，註明「需要使用者提供」
-- 若缺內容（copy）：先用真實、合理的佔位文字，明確標註哪些是 placeholder
+Missing info：缺脈絡 → 停下來問；缺素材 → placeholder 並標註；缺 copy → 用真實合理的佔位文字並標註。
 
 </output_contract>
 
@@ -326,41 +295,26 @@ Active tool set：預設保持小——一次 design flow 通常只會用到 Rea
 
 <default_follow_through_policy>
 
-Directly do（低風險、可逆、無外部副作用）：
-- 建立新資料夾、寫新 HTML / JSX / CSS 檔案
-- 複製 starter components、user 提供的素材
-- 增量調整 layout、色彩、字型、animation curve
-- 加 Tweaks、加變體、加 placeholder
-- 開瀏覽器預覽、檢查 console
-
-Ask first（有副作用或可能偏離使用者意圖）：
-- 加上原本沒要求的大段新內容（新增頁、新增 section、新增一整個 flow）
-- 批量複製 > 20 個檔案
-- 換掉使用者指定的品牌色、字型
-- 從使用者提供的 codebase 大量引用 component（先問是否可以）
-- 把單頁原型擴成多頁網站
-
-Stop and report：
-- 沒有任何設計脈絡、使用者也未授權「從零開始」→ 停下來說明，請他提供 UI kit / 截圖 / 品牌
-- 被要求仿製受版權保護的商業 UI、而 email 域名無法證明任職該公司 → 拒絕並建議改做原創
-- 發現明顯的無障礙 / 法規問題（例如字太小、對比不足）→ 先指出再問要不要修
+- **Directly do**（低風險、可逆）：建立資料夾、寫 HTML / JSX / CSS、複製 starter / 素材、調 layout / 色 / 字 / animation curve、加 Tweaks / 變體 / placeholder、開瀏覽器預覽
+- **Ask first**：擴 scope（加 section / flow / 頁面）、批量複製 > 20 檔、換使用者指定的品牌色 / 字型、大量引用別人的 codebase component、單頁擴多頁、覆蓋同名資料夾
+- **Stop and report**：零設計脈絡且無授權「從零開始」→ 停下來問；被要求仿製受版權保護的商業 UI 且 email 域名不符 → 拒絕並建議原創；明顯無障礙 / 法規問題（字太小、對比不足）→ 先指出再問是否修
 
 </default_follow_through_policy>
 
-## Critical rules（來源 prompt 硬性規定，不得違反）
+## Critical rules（硬性規定，不得違反）
 
-1) **React + Babel 必須用 pinned 版本 + integrity hash**（見 workflow Step 5）。用 `react@18` 或拿掉 integrity 都會壞。
-2) **`const styles = {...}` 是禁用的**——多檔共用同名變數會撞。改 `const <componentName>Styles = {...}` 或改 inline style。
-3) **跨 Babel 檔共用 component 要 `Object.assign(window, {...})`**——每個 `<script type="text/babel">` 有獨立 scope。
-4) **不要用 `scrollIntoView`**——會打壞 webapp。用其他 DOM scroll。
-5) **Fixed-size 內容（deck、video）必須自己實作 JS scaling**——做 deck 請直接用 `assets/starters/deck_stage.js`，不要手刻。
-6) **單檔 > 1000 行要拆**——拆成多個 JSX，用 `<script>` 載入。
-7) **Scale 基準**：1920×1080 slide 文字 ≥ 24px；列印 ≥ 12pt；mobile hit target ≥ 44px。
-8) **No AI slop tropes**：避免狂用 gradient 背景、避免 emoji（除非品牌用）、避免「圓角容器 + 左邊色條 accent」這種樣板、避免用 SVG 畫插圖（用 placeholder 等真素材）、避免用 Inter / Roboto / Arial / Fraunces / 系統字這類過度使用的字型。
-9) **No filler content**：不要為了填空間編內容；每個元素都要有存在的理由；若區塊看起來空，是設計問題——用版面和組合解決，不要亂塞。
-10) **Label slides and screens**：凡代表 slide / 螢幕的 element 加 `[data-screen-label]`（例如 `"01 Title"`、`"02 Agenda"`），方便使用者 comment 時定位。Slide 編號從 1 開始，不要 0-index。
-11) **copy assets locally**：不要直接 reference design system 外部路徑；複製進作品資料夾。
-12) **Speaker notes 只在被要求時才加**。
+1. **React + Babel 必須用 pinned 版本 + integrity hash**（見 Step 5 snippet）。改版本或拿掉 integrity 都會壞。
+2. **`const styles = {...}` 禁用**——多檔共用同名變數會撞。改 `const <componentName>Styles = {...}` 或 inline style。
+3. **跨 Babel 檔共用 component 要 `Object.assign(window, {...})`**——每個 `<script type="text/babel">` 有獨立 scope。
+4. **不要在 iframe-previewed artifact（Claude.ai Artifacts）中用 `scrollIntoView`**——該環境 host 會被干擾。本地 HTML 檔直接用 `scrollIntoView` 沒問題；若不確定使用者會在哪個環境預覽，預設用 `window.scrollTo()` 或 `element.scrollTop` 比較穩。
+5. **Fixed-size 內容（deck、motion video）必須用內建 scaling**——直接用 `deck_stage.js`（web component），不手刻 `transform: scale()`。
+6. **單檔 > 1000 行要拆**——多個 JSX 用 `<script>` 載入，在主檔組合。
+7. **Scale 基準**：1920×1080 slide 文字 ≥ 24px；列印 ≥ 12pt；mobile hit target ≥ 44px。
+8. **No AI slop tropes**：避免狂 gradient 背景、emoji（除非品牌用）、「圓角容器 + 左邊色條 accent」樣板、自畫 SVG 插圖、Inter / Roboto / Arial / Fraunces 這類 overused 字型。
+9. **No filler content**：每個元素都要有存在的理由；區塊看起來空是設計問題，用版面解決不是亂塞。
+10. **Label slides & screens**：代表 slide / 螢幕的 element 加 `data-screen-label`（`"01 Title"`、`"02 Agenda"`），1-indexed。
+11. **Copy assets locally**：不 reference 外部路徑，全複製進作品資料夾。
+12. **Speaker notes 只在被要求時才加**。
 
 ## Sub-flows（各類型深入操作）
 
@@ -405,123 +359,16 @@ Example 2 — 使用者說：「prototype 一個外送 app 的 onboarding」
 
 </examples>
 
-<model_notes>
+## Ops & release（指標與流程）
 
-- GPT-style / Sonnet-style：本 skill 的 imperative 步驟、critical rules、Tweaks 協定、React pinned hashes 都已寫得足夠具體，直接照做即可。
-- Reasoning models（Opus / thinking-mode）：重點給「目標、品牌敘事、使用者期待」，讓模型自由決定版面與 motion；但 critical rules 區段仍需硬性遵守。
-- 多回合拆分：複雜 prototype / deck 應拆成「探索 + 敘事」→「骨架 + 早期預覽」→「React components + 互動」→「Tweaks + 變體」→「驗證 + 交付」五個回合，而不是一次 mega prompt。
+| 主題 | 檔案 |
+|---|---|
+| 測試計畫、trigger / functional / ROI、regression gates 細節 | `references/testing-plan.md` |
+| Troubleshooting 症狀對照表 | `references/troubleshooting.md` |
+| 不同 foundation model 的使用差異 | `references/model-notes.md` |
+| 打包、單一真實來源、eval workflow | `references/distribution.md` |
+| 發佈前 readiness gate | `references/quality_checklist.md` |
+| Trigger / functional eval 資料 | `assets/evals/evals.json` |
+| Release threshold（canonical） | `assets/evals/regression_gates.json` |
 
-</model_notes>
-
-## Testing plan
-
-### Triggering tests
-
-Should trigger：
-- 「幫我做一份 6 頁的產品 pitch deck」
-- 「做一個外送 app 的 onboarding prototype」
-- 「mock 這張截圖成可點擊的 HTML」
-- 「做一段開場動畫」
-- 「wireframe 我的 landing，3 個方向」
-- 「把這份 PRD 變成投影片」
-- 「design something like Linear 的首頁」
-
-Should NOT trigger：
-- 「幫我改 Tailwind config 新增 spacing」→ frontend
-- 「audit 我的首頁視覺」→ /design-review
-- 「從零建一套設計 tokens」→ /design-consultation
-- 「PR 要不要這樣改」→ 一般 review
-
-Near-miss / 易混淆：
-- 「設計一個 component」→ 若目標是 repo production code：frontend-skill；若是先 mock：cc-designer
-- 「幫我做個網頁」→ 若是 landing / marketing mock：cc-designer；若是真的要進 Next.js：frontend-skill
-
-Should ask before acting：
-- 沒有任何設計脈絡時，不要直接從零開始畫；先停下來問
-
-### Functional tests
-
-Test case 1：deck from PRD
-- Given：有一份 PRD 檔案路徑、使用者說「8 頁、給董事會看、要像 Linear」
-- When：執行 cc-designer flow
-- Then：產出 `<name>.html`，用 deck_stage；8 個 section；console 無錯誤；頂端有設計敘事註解；Tweaks 含主色 / 字型切換
-
-Test case 2：Interactive prototype
-- Given：使用者給 1 張截圖 + 4 步驟說明
-- When：執行 cc-designer flow
-- Then：產出 React + Babel prototype；ios_frame；每 screen 有 `data-screen-label`；Tweaks 含顏色與 CTA copy 切換
-
-Test case 3：no context, should stop
-- Given：「幫我設計 app」沒有其他脈絡
-- When：執行
-- Then：skill 應停下來要求 UI kit / 截圖 / 品牌資料，而非憑空畫
-
-### Performance comparison
-
-- Baseline（無 skill）：Claude 會產出單一 HTML，常常缺 integrity hash、styles 命名撞、沒有 Tweaks、沒複製 assets、console 有錯誤
-- With skill：pinned 版本、styles 命名正確、Tweaks 預設附、assets 本地複製、交付前驗證
-
-### ROI guardrail
-
-- Quality gain 必須高過：額外 tool calls（~10-20 次 Read / Write）、額外 bundle 時間（starter copies）、維護 starter 檔的心力
-- 若使用者要求的是 one-shot「寫個 HTML」而非「設計」，退回一般 prompt 就好，不要硬上本 skill
-
-### Regression gates
-
-- Min pass-rate delta：+15%（vs baseline）
-- Max time increase：+60s（多數任務在 2-5 分鐘可完成）
-- Max under-trigger failures：≤ 2 / 10
-- Max over-trigger failures：≤ 1 / 10（不該 trigger 卻 trigger）
-
-### Feedback loop
-
-常見失敗訊號：
-- console 有錯誤 → 多半是 React UMD / integrity hash / styles 命名撞；修 Critical rules 1-3
-- 視覺太「AI 感」 → 檢查 Content guidelines 的 AI slop tropes
-- 使用者說「太像 web 了」 → 提醒自己任務是 deck / prototype / animation，避免用 web 設計套路
-- 交付後 Tweaks 無作用 → 檢查 `references/tweaks.md` 的 postMessage 順序
-
-### Host compatibility checks
-
-- Claude Code：Read / Write / Edit / Bash / Glob / Grep + `/browse`（可選）
-- Codex CLI：同上但無 `/browse`——用 `xdg-open` / `open` 預覽
-- OpenClaw：同 Codex CLI
-- 任何沒有 filesystem 的 chat 介面：**不支援**（無法交付 HTML）
-
-## Eval workflow
-
-- Approved prompts 放 `assets/evals/evals.json`
-- Release thresholds 放 `assets/evals/regression_gates.json`
-- 執行 eval 可用 skill-creator-advanced 的腳本鏈
-
-## Distribution notes
-
-- Packaging：從 skill-creator-advanced 呼叫 `package_skill.py /home/ubuntu/.claude/skills/cc-designer <out-dir>`
-- 單一真實來源：本 skill folder；各 host 若要 wrapper 僅做薄層轉接
-- 外部 README / 發佈說明請放在 repo 根，不放入 skill folder
-
-## Troubleshooting
-
-- **Symptom**：打開 HTML 空白 / console 一片紅
-  - Cause：React / Babel script tag 沒用 pinned + integrity，或 `type="module"` 誤加
-  - Fix：改回 Critical rule 1 的精確 snippet
-
-- **Symptom**：切 Tweaks 沒反應
-  - Cause：`__edit_mode_available` 在 listener 註冊前就送出
-  - Fix：見 `references/tweaks.md`——必須**先**註冊 listener，**再** postMessage
-
-- **Symptom**：deck 翻到第 5 頁但 speaker notes 還停在第 1 頁
-  - Cause：沒 call `window.postMessage({slideIndexChanged: N})`
-  - Fix：用 `deck_stage.js`，它會自動處理
-
-- **Symptom**：同專案有兩個 component 都叫 `styles`，其中一個失效
-  - Cause：Critical rule 2 違反
-  - Fix：改 `<componentName>Styles`
-
-## Resources
-
-- `scripts/`：本 skill 不另外附 script；可搭配 skill-creator-advanced 的 format_check / audit 腳本
-- `references/`：詳細子流程（載入時才讀）
-- `references/quality_checklist.md`：發佈前的 readiness gate，必須更新後才算完成
-- `assets/starters/`：可複製到使用者工作目錄的 scaffold 元件
-- `assets/evals/`：trigger + functional eval 資料
+當上述欄位和 `regression_gates.json` 的數字有衝突時，**JSON 是 source of truth**。

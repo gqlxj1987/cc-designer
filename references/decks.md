@@ -5,16 +5,18 @@
 ## 一次性規則
 
 - **永遠用 `deck_stage.js` 做骨架**（在 `assets/starters/deck_stage.js`）——它幫你處理：
-  - 1920×1080 固定 canvas + `transform: scale()` 自動縮放至任何 viewport
-  - 鍵盤（←→、space）與點擊翻頁
-  - 左下 slide 計數 overlay
+  - 1920×1080 authored canvas + `transform: scale()` 自動縮放至任何 viewport
+  - 鍵盤（←→、space、PgUp/PgDn、Home/End）與點擊/tap zone 翻頁
+  - 按 `R` 重置回 slide 0（有小 keyboard hint）
+  - 右下 slide 計數 overlay（hide on print）
   - `localStorage` 持久化目前 slide index（reload 後會回到原頁）
-  - 列印成 PDF（每張 slide 一頁）
-  - 自動給每張 slide 加 `data-screen-label`、`data-om-validate`
-  - 自動 `postMessage({slideIndexChanged: N})` 給 parent window（speaker notes 同步需要這個）
-- **不要手刻 scaling**。
-- 每張 slide 就是 `<deck-stage>` 的直系 `<section>` 子元素。
-- 不要在 deck 頁面頂端放「title」類 chrome——slide 本體就是 title。
+  - 列印成 PDF（每張 slide 一頁，自動還原到 authored size）
+  - `slidechange` CustomEvent + `window.postMessage({slideIndexChanged: N})`（speaker notes 同步自動處理）
+  - 觸控裝置自動啟用三段 tap zone（左/中/右）
+- 若要 1:1 authored size（例如 PPTX 匯出工具需要），在 `<deck-stage noscale>` 加 `noscale` attribute
+- **不要手刻 scaling**
+- 每張 slide 就是 `<deck-stage>` 的**直系** `<section>` 子元素（中間不能包 `<div>`）
+- 不要在 deck 頁面頂端放「title」類 chrome——slide 本體就是 title
 
 ## 標準骨架
 
@@ -26,7 +28,6 @@
 <title>Product Pitch</title>
 <script src="deck_stage.js"></script>
 <style>
-  /* 全域字型 / 主色 CSS variables */
   :root {
     --bg: #0b0b0f;
     --fg: #f0f0f5;
@@ -69,6 +70,25 @@
 1-indexed，match slide counter：
 - `data-screen-label="01 Title"`、`"02 Agenda"`、...
 - 使用者講「slide 5」= label `"05"`（不是陣列 index 4）
+- 若沒手動加，`deck_stage.js` 會自動補——建議還是手動加，讓 source 自述
+
+## 聽 slide change 事件
+
+需要同步外部 UI（speaker view、analytics）時：
+
+```js
+document.querySelector('deck-stage').addEventListener('slidechange', (e) => {
+  console.log('now at slide', e.detail.index)
+})
+```
+
+或在 parent window 聽：
+
+```js
+window.addEventListener('message', (e) => {
+  if (typeof e.data?.slideIndexChanged === 'number') { /* ... */ }
+})
+```
 
 ## Speaker notes（僅在被要求時才做）
 
@@ -86,7 +106,7 @@
 ```
 
 - JSON 陣列的 index 對應 slide index（0-indexed，與 slide label 的 1-index 差 1）
-- `deck_stage.js` 會自動 render speaker notes；你只需要放 `<script>` tag
+- `deck_stage.js` 會自動 render speaker notes overlay；你只需要放 `<script>` tag
 - 內容寫完整講稿、口語、會在台上講的話——不是條列
 - 有 speaker notes 的 slide，主畫面上就可以放少字 + 強視覺
 
@@ -107,7 +127,7 @@
 ## 匯出 PPTX
 
 若使用者要匯出：
-- 用 `deck_stage.js` 產的 deck 會自動有 `resetTransformSelector="deck-stage"` 相容性
+- `deck_stage.js` 已內建 `noscale` 相容——匯出工具會加 attribute，deck 會自動還原到 1920×1080
 - 匯出指令請使用者在 Claude.ai Artifacts 環境執行；Claude Code 本地環境不支援 gen_pptx
 - 匯出用 `editable` mode 會轉成原生 PowerPoint text/shape/image；`screenshots` mode 則是一張圖一頁
-- 若要 editable，避免用過於 CSS-only 的效果（blur、mix-blend-mode）——這些不會 export
+- 若要 editable，避免用過於 CSS-only 的效果（blur、mix-blend-mode、backdrop-filter）——這些不會 export
