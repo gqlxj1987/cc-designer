@@ -1,0 +1,112 @@
+{
+  "skill_name": "cc-designer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "pitch-deck-happy-path",
+      "prompt": "幫我做一個 8 頁的 pitch deck，介紹我們新 launch 的 AI 寫作助理產品 Quill。受眾是早期 SaaS 投資人，10 分鐘簡報。色調偏 editorial（深色 + 暖白）、字型不要 Inter / Roboto。請輸出可以直接打開的 HTML。",
+      "expected_output": "deck_stage.js + index.html 在使用者工作目錄；8 個 <section>；hero / problem / solution / product / traction / market / team / ask；用 Instrument Serif / Space Grotesk / Söhne 等非 default 字型；深色 #0b0b0f 主題；preview 指令給出來",
+      "files": [],
+      "expectations": [
+        "創建 index.html + deck_stage.js（從 starter 複製）",
+        "8 張 section",
+        "用 1-2 個 system decision 字型，不是 Inter / Roboto / Arial",
+        "1920×1080 設計尺寸",
+        "提供 gstack /browse 或 xdg-open / open 預覽指令",
+        "顯示 visual decisions 摘要"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "interactive-prototype-onboarding",
+      "prompt": "我要做一個 4-screen 的 iOS onboarding prototype（welcome → permission → profile → first action），可以點按鈕在 screen 之間切換。沒有既有 UI kit，請先問我品牌參考。",
+      "expected_output": "先用 AskUserQuestion 問品牌 / UI kit / 風格偏好，再 scaffold；最終輸出 index.html + ios_frame.jsx + 4 個 screen JSX；React 18.3.1 + Babel 7.29.0 pinned；data-screen-label 1-4；可點切換",
+      "files": [],
+      "expectations": [
+        "先發 AskUserQuestion，不要自行假設品牌",
+        "React + ReactDOM + Babel 用 unpkg pinned 版本與 integrity",
+        "ios_frame.jsx 從 starter 複製",
+        "每個 screen 有 data-screen-label",
+        "跨檔 component 用 Object.assign(window, {...}) 共享",
+        "不要用 type=\"module\"",
+        "不要在 styles 變數重名"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "wireframe-design-canvas-3-options",
+      "prompt": "幫我探索 settings page 的 3 種 wireframe 方向：1) sidebar nav, 2) tab nav, 3) accordion。低保真就好，灰階 + 真 copy + 標註。",
+      "expected_output": "design_canvas.jsx + 3 個 Cell；每個 Cell 有 label 表達 intent（不是 A/B/C）；greyscale 色票；用真實 settings copy 而非 lorem ipsum",
+      "files": [],
+      "expectations": [
+        "用 design_canvas.jsx starter",
+        "3 個 Cell，label 寫出 intent（如 'Dense sidebar' / 'Tabbed top nav' / 'Accordion grouping'）",
+        "灰階色（#fafaf7 / #e3e3e0 / #888 / #0b0b0f）",
+        "無 lorem ipsum",
+        "annotation 文字標明設計取捨"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "animation-product-launch",
+      "prompt": "做一個 6 秒的 motion，介紹我們新功能 'Live Cursors'：logo fade in → 標語打字機 → 三個 feature icon 進場 → CTA。給可播放可暫停的 scrubber。",
+      "expected_output": "animations.jsx starter + index.html；Stage duration=6；4 個 Sprite 排好時間軸；scrubber 可拖；色彩 / 字型有意圖",
+      "files": [],
+      "expectations": [
+        "animations.jsx 從 starter 複製或 inline",
+        "Stage duration=6",
+        "至少 4 個 Sprite，start/end 時間錯開",
+        "Scrubber 顯示 + 可控播放",
+        "Easing 用 useTime / interpolate"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "negative-trigger-production-app",
+      "prompt": "幫我把 src/components/Header.tsx 加一個 dark mode toggle，要符合既有 design system。",
+      "expected_output": "不該觸發 cc-designer；應交給 frontend-skill / design-taste-frontend / design-html，因為這是 production code 改動，不是設計探索",
+      "files": [],
+      "expectations": [
+        "skill 不該自我觸發",
+        "若意外觸發，SKILL.md 的 decision_boundary 應建議轉給 frontend-skill"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "negative-trigger-bug-fix",
+      "prompt": "我的 Next.js prod build 跑不起來，error 是 Module not found: 'react-icons'，幫我修。",
+      "expected_output": "不該觸發 cc-designer；應交給 investigate / 一般 debugging。",
+      "files": [],
+      "expectations": [
+        "skill 不該自我觸發",
+        "與設計探索無關"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "ambiguous-design-an-app",
+      "prompt": "幫我設計一個 app",
+      "expected_output": "立即 AskUserQuestion 問：產品方向、受眾、平台、screen 數、品牌、scope；不要直接生產，避免 slop",
+      "files": [],
+      "expectations": [
+        "先發 AskUserQuestion",
+        "至少問 5 個 key questions（品牌 / scope / platform / variation / novelty）",
+        "不要假裝已有 context 直接做"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "deck-with-tweaks",
+      "prompt": "做一個 6-slide minimalist 簡報，主題是「為什麼我們不再用 OKR」，要能即時切換主色與字型（給 Tweaks）。",
+      "expected_output": "deck_stage.js + index.html + Tweaks panel；EDITMODE-BEGIN/END marker；listener 先註冊再宣告 available；切換即時 + localStorage 持久化",
+      "files": [],
+      "expectations": [
+        "Tweaks listener 先於 __edit_mode_available 宣告",
+        "EDITMODE-BEGIN / EDITMODE-END marker 包合法 JSON",
+        "tweaksPanelStyles 不是 styles",
+        "切換即時改 CSS variable",
+        "panel 標題叫 'Tweaks'"
+      ]
+    }
+  ]
+}
