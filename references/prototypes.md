@@ -1,25 +1,25 @@
 # Interactive prototype 子流程
 
-目標：**像真的一樣**——看起來像真產品、點起來像真產品、但只有關鍵 flow 是真的，其他都是精心的 placeholder。
+目标：**像真的一样**——看起来像真产品、点起来像真产品、但只有关键 flow 是真的，其他都是精心的 placeholder。
 
-## 何時選 prototype 而不是 deck
+## 何时选 prototype 而不是 deck
 
-- 要展示互動（點擊 → 狀態改變、多步 flow、表單）
-- 要 demo 動畫或 hover 行為
+- 要展示互动（点击 → 状态改变、多步 flow、表单）
+- 要 demo 动画或 hover 行为
 - 要 user test flow
 
-## 何時選 canvas 而不是 prototype
+## 何时选 canvas 而不是 prototype
 
-- 純視覺探索（多個色彩 / 版面 / icon 組並列比較）→ 用 `design_canvas.jsx`
-- 見 `wireframes.md`
+- 纯视觉探索（多个色彩 / 版面 / icon 组并列比较）→ 用 `design_canvas.jsx`
+- 见 `wireframes.md`
 
-## 先決定：React 還是 static HTML？
+## 先决定：React 还是 static HTML？
 
-- **Default 是 static HTML + CSS**——大多數 landing / marketing mock / 淺互動 prototype 不需要 React
-- 何時加 React：多步驟 state、form validation、Tweaks panel 邏輯、跨 screen 轉場、動態列表
-- 即使決定用 React，仍預設 CDN pinned + Babel inline；不要開 npm / build pipeline
+- **Default 是 static HTML + CSS**——大多数 landing / marketing mock / 浅互动 prototype 不需要 React
+- 何时加 React：多步骤 state、form validation、Tweaks panel 逻辑、跨 screen 转场、动态列表
+- 即使决定用 React，仍预设 CDN pinned + Babel inline；不要开 npm / build pipeline
 
-## 骨架（需要 React 時）
+## 骨架（需要 React 时）
 
 ```html
 <!DOCTYPE html>
@@ -40,7 +40,7 @@
 
 <!-- 共用 primitives -->
 <script type="text/babel" src="components.jsx"></script>
-<!-- Starter（裝置框） -->
+<!-- Starter（装置框） -->
 <script type="text/babel" src="ios_frame.jsx"></script>
 <!-- 各 screen -->
 <script type="text/babel" src="screens.jsx"></script>
@@ -51,9 +51,9 @@
 </html>
 ```
 
-## 關鍵跨檔 scope 規則
+## 关键跨档 scope 规则
 
-每個 `<script type="text/babel">` 有獨立 scope。要共享 component，**檔末 `Object.assign(window, {...})`**：
+每个 `<script type="text/babel">` 有独立 scope。要共享 component，**档末 `Object.assign(window, {...})`**：
 
 ```jsx
 // components.jsx
@@ -64,7 +64,7 @@ Object.assign(window, { Button, Chip });
 ```
 
 ```jsx
-// screens.jsx — Button 與 Chip 已在 window 上
+// screens.jsx — Button 与 Chip 已在 window 上
 function WelcomeScreen({ onNext }) {
   return (
     <div data-screen-label="01 Welcome">
@@ -86,72 +86,72 @@ function App() {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 ```
 
-Starter 檔（例如 `ios_frame.jsx`）本身已在檔尾做 `Object.assign(window, {...})`，直接用即可——檢查檔尾就知道它暴露了哪些名字。
+Starter 档（例如 `ios_frame.jsx`）本身已在档尾做 `Object.assign(window, {...})`，直接用即可——检查档尾就知道它暴露了哪些名字。
 
-## 絕對不要
+## 绝对不要
 
-- 寫 `const styles = {...}`——多檔同名會撞。改 `const welcomeStyles = {...}` 或 inline style。
-- 加 `type="module"` 到 `<script>`——會 break。
-- 單檔 > 1000 行——拆！
-- **在 Claude.ai Artifacts iframe 預覽的 prototype** 中用 `scrollIntoView`——host 會被打壞。本地 HTML 直接雙擊打開用 `scrollIntoView` 沒問題。若不確定使用者會在哪裡預覽，預設用 `element.scrollTo()` / `window.scrollTo()` / ref + `getBoundingClientRect` 自算。
+- 写 `const styles = {...}`——多档同名会撞。改 `const welcomeStyles = {...}` 或 inline style。
+- 加 `type="module"` 到 `<script>`——会 break。
+- 单档 > 1000 行——拆！
+- **在 Claude.ai Artifacts iframe 预览的 prototype** 中用 `scrollIntoView`——host 会被打坏。本地 HTML 直接双击打开用 `scrollIntoView` 没问题。若不确定使用者会在哪里预览，预设用 `element.scrollTo()` / `window.scrollTo()` / ref + `getBoundingClientRect` 自算。
 
-## 裝置 / 視窗 frame
+## 装置 / 视窗 frame
 
-為了看起來像真產品，包一層 frame：
+为了看起来像真产品，包一层 frame：
 - iOS → `ios_frame.jsx`（iOS 26 Liquid Glass）
 - Android → `android_frame.jsx`（Material 3）
-- 桌機 app → `macos_window.jsx`（macOS Tahoe Liquid Glass）
-- 瀏覽器內 → `browser_window.jsx`（Chrome dark）
+- 桌机 app → `macos_window.jsx`（macOS Tahoe Liquid Glass）
+- 浏览器内 → `browser_window.jsx`（Chrome dark）
 
 ```jsx
-// 從 assets/starters 複製進來，由 Babel 載入
+// 从 assets/starters 复制进来，由 Babel 载入
 <IOSDevice dark={false} navTitle="Home" showTabBar>
   <WelcomeScreen onNext={handleNext} />
 </IOSDevice>
 ```
 
-實際可用的 export 請檢查 starter 檔尾的 `Object.assign(window, {...})`。對照 `starter-components.md`：
+实际可用的 export 请检查 starter 档尾的 `Object.assign(window, {...})`。对照 `starter-components.md`：
 - ios_frame.jsx：`IOSDevice`、`IOSStatusBar`、`IOSNavBar`、`IOSGlassPill`、`IOSList`、`IOSListRow`、`IOSKeyboard`
 - android_frame.jsx：`AndroidDevice`、`AndroidStatusBar`、`AndroidAppBar`、`AndroidListItem`、`AndroidNavBar`、`AndroidKeyboard`
 - macos_window.jsx：`MacWindow`、`MacSidebar`、`MacSidebarItem`、`MacSidebarHeader`、`MacToolbar`、`MacTrafficLights`、`MacGlass`
 - browser_window.jsx：`ChromeWindow`、`ChromeTabBar`、`ChromeTab`、`ChromeToolbar`、`ChromeTrafficLights`
 
-不要自己畫裝置邊框——starter 做得精細得多（status bar、動態島、Liquid Glass 折射、虛擬鍵盤）。
+不要自己画装置边框——starter 做得精细得多（status bar、动态岛、Liquid Glass 折射、虚拟键盘）。
 
-## 解讀 `<mentioned-element>` blocks
+## 解读 `<mentioned-element>` blocks
 
-當使用者在預覽 pane 中點擊 / 評論某個 element，harness 會附上 `<mentioned-element>` 描述——有 `react:` 鏈、`dom:` 鏈、`id:`（`data-cc-id="cc-N"` 或 `data-dm-ref="N"`）。
+当使用者在预览 pane 中点击 / 评论某个 element，harness 会附上 `<mentioned-element>` 描述——有 `react:` 链、`dom:` 链、`id:`（`data-cc-id="cc-N"` 或 `data-dm-ref="N"`）。
 
-- `data-cc-id` / `data-dm-ref` 是 runtime 臨時屬性，**不在 source**——別在 source 搜
-- 用 `react:` 鏈推回你的 component；若還是不清楚，在瀏覽器 devtools 或 gstack `/browse` 內 eval 確認
-- **不要盲猜後就改**——先探再改
+- `data-cc-id` / `data-dm-ref` 是 runtime 临时属性，**不在 source**——别在 source 搜
+- 用 `react:` 链推回你的 component；若还是不清楚，在浏览器 devtools 或 gstack `/browse` 内 eval 确认
+- **不要盲猜后就改**——先探再改
 
-## 為了讓使用者能 comment，幫 screen 加 label
+## 为了让使用者能 comment，帮 screen 加 label
 
-每個代表 screen / view 的 element 加 `data-screen-label`：
+每个代表 screen / view 的 element 加 `data-screen-label`：
 
 ```jsx
 <div data-screen-label="01 Welcome"> ... </div>
 <div data-screen-label="02 Permission Ask"> ... </div>
 ```
 
-1-indexed，match 使用者會講的話。
+1-indexed，match 使用者会讲的话。
 
 ## Tweaks 加在 prototype 上
 
-Tweaks 讓使用者即時切換變體。典型 prototype 的 tweaks：
+Tweaks 让使用者即时切换变体。典型 prototype 的 tweaks：
 - 主色 / accent
 - 主 CTA copy
-- 動畫 curve（ease-out / linear）
-- 要不要加 skip / back 按鈕
-- onboarding 步驟數
-- `dark` prop 切換（裝置 frame 支援）
+- 动画 curve（ease-out / linear）
+- 要不要加 skip / back 按钮
+- onboarding 步骤数
+- `dark` prop 切换（装置 frame 支援）
 
-細節見 `tweaks.md`。
+细节见 `tweaks.md`。
 
-## Claude integration（可選）
+## Claude integration（可选）
 
-若 prototype 需要真的 AI 回覆，可用 `window.claude.complete()`（Claude.ai Artifacts 環境有提供；Claude Code 本地不一定）：
+若 prototype 需要真的 AI 回复，可用 `window.claude.complete()`（Claude.ai Artifacts 环境有提供；Claude Code 本地不一定）：
 
 ```js
 const text = await window.claude.complete("Summarize ...");
@@ -163,10 +163,10 @@ const text2 = await window.claude.complete({
 
 - 使用 `claude-haiku-4-5`、1024 token 上限
 - 有 rate limit
-- Claude Code 本地 CLI 執行時此 API 不存在——如果使用者會在本地跑，改用 mock 回覆或 placeholder
+- Claude Code 本地 CLI 执行时此 API 不存在——如果使用者会在本地跑，改用 mock 回复或 placeholder
 
-## 內容密度
+## 内容密度
 
 - Mobile hit target 最小 44×44 px
-- 別塞太多 section；prototype 要 focus 在關鍵 flow
-- 內文用真實語氣、真實長度的 copy；不要 Lorem ipsum
+- 别塞太多 section；prototype 要 focus 在关键 flow
+- 内文用真实语气、真实长度的 copy；不要 Lorem ipsum
